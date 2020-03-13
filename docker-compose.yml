@@ -1,6 +1,50 @@
 version: '3.2'
 
 services:
+
+
+  zipkin:
+    image: openzipkin/zipkin
+    environment:
+      - STORAGE_TYPE=elasticsearch
+      - ES_HOSTS=elasticsearch:9200
+      - KAFKA_BOOTSTRAP_SERVERS=kafka1:9092
+    ports:
+      - 9411:9411
+    depends_on:
+      - elasticsearch
+      - kafka1
+
+  # $ mongo
+  mongodb:
+    image: mongo:3.6.9
+#    mem_limit: 350m
+    ports:
+      - "27017:27017"
+    command: mongod --smallfiles
+    healthcheck:
+      test: "mongo --eval 'db.stats().ok'"
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
+  # $ mysql -uroot -h127.0.0.1 -p
+  mysql:
+    image: mysql:5.7
+#    mem_limit: 350m
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpwd
+      - MYSQL_DATABASE=review-db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pwd
+    healthcheck:
+      test: "/usr/bin/mysql --user=user --password=pwd --execute \"SHOW DATABASES;\""
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
   zoo1:
     image: zookeeper:3.4.9
     hostname: zoo1
